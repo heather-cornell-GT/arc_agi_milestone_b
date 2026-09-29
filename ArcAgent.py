@@ -73,6 +73,7 @@ class ArcAgent:
             if self.rule_works(training, rule_name): #check if the rules by themself give the correct answer
                 answer = self.apply_rule(rule_name, test_input)
                 self.add_answer(predictions, answer)
+        return predictions[:3]
 
     def apply_rule(self, rule_name, grid):
         """
@@ -94,8 +95,6 @@ class ArcAgent:
             return grid.T
         if rule_name == "crop_nonzero":
             return self.crop_nonzero(grid)
-
-
         if rule_name.startswith("left_right_"):
             operation = rule_name.replace("left_right_", "")
             return self.compare_halves(grid, "left_right", operation)
@@ -128,3 +127,10 @@ class ArcAgent:
                     return
 
         predictions.append(answer)
+
+####TO DO
+#write the functions to test the other rules like
+####comparing halves of the training image s
+####crop nonzer
+####learning colors???
+    #how to learn when colors are just swapped
