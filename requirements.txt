@@ -1,0 +1,39 @@
+# This tells pip to install a cpu only version of pytorch for linux (Ubuntu 22.04)
+#    please consult https://pytorch.org/get-started/locally/ for specifics urls for Windows and MacOS
+
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+# keep in mind that Gradescope/Autograder is a headless server with no GPU
+#   so it is recomended that you use the  same setup locally.
+
+# We are not respondsible for failed submissions if you use versions other than the
+#   ones listed here and failed attempts can not be given back or extended
+#
+# If you are not using any specific import you can comment them out if you like
+#   you are not required to use any of these other than numpy
+#   and are included for convenience
+
+# Python 3.14.7 -- CPU-only stack
+# Verified compatible / cp314 wheels available as of Aug 2026
+
+numpy==2.4.6
+scipy==1.17.1
+pandas==2.3.3
+scikit-learn==1.9.0
+scikit-image==0.26.0
+opencv-contrib-python-headless==4.14.0.94
+
+torch==2.12.0
+torchvision==0.27.0
+
+# NOTE on torch install (CPU-only):
+# - On Windows/macOS, plain PyPI wheels are already CPU-only, so
+#     pip install -r requirements.txt
+#   is sufficient.
+# - On Linux, PyPI's default torch wheel now pulls in a CUDA runtime
+#   (targeting CUDA 13.0), which you don't want for a CPU-only project.
+#   Install torch/torchvision explicitly from the CPU index instead:
+#     pip install torch==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cpu
+#   then run:
+#     pip install -r requirements.txt --no-deps  (or just pip install the rest normally,
+#     since pip won't reinstall torch/torchvision if versions already match)
