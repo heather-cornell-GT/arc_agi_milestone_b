@@ -70,6 +70,9 @@ class ArcAgent:
 
         #testing out each of the rules defined earlier one by one
         for rule_name in self.rules:
+            if self.rule_works(training, rule_name): #check if the rules by themself give the correct answer
+                answer = self.apply_rule(rule_name, test_input)
+                self.add_answer(predictions, answer)
 
     def apply_rule(self, rule_name, grid):
         """
@@ -102,3 +105,26 @@ class ArcAgent:
         return None
 
 
+    def rule_works(self, training, rule_name):
+        """
+        check if the rule gives the right output, and if so, reutrn true
+        """
+        for train_input, train_output in training:
+            answer = self.apply_rule(rule_name, train_input)
+            if answer is None:
+                return False
+            if not np.array_equal(answer, train_output):
+                return False
+
+        return True
+
+    def add_answer(self, predictions, answer):
+        """
+        add the answer to the predictions list as long as it isnt empty
+        """
+        if answer is not None:
+            for existing in predictions:
+                if np.array_equal(existing, answer):
+                    return
+
+        predictions.append(answer)
