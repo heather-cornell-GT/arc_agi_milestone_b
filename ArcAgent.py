@@ -77,6 +77,7 @@ class ArcAgent:
                 if color_map is not None:
                     answer = self.apply_rule(rule_name, test_input)
                     if answer is not None:
+                        answer = self.change_out_colors(answer, color_map)
                         self.add_answer(predictions, answer)
 
         return predictions[:3]
@@ -127,7 +128,7 @@ class ArcAgent:
         """
         add the answer to the predictions list as long as it isnt empty
         """
-        if answer is not None:
+        if answer is None:
             return
         for existing in predictions:
             if np.array_equal(existing, answer):
@@ -203,3 +204,13 @@ class ArcAgent:
                     return None  ##
                 color_map[old_color] = new_color
         return color_map
+
+    def change_out_colors(self, grid, color_map):
+        """
+        change the colors according to the color mpa that was learned earlier
+        """
+        result = grid.copy()
+        for old_color, new_color in color_map.items():
+            result[grid == old_color] = new_color
+
+        return result
