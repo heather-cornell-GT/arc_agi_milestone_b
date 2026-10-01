@@ -1,5 +1,4 @@
 import numpy as np
-
 from ArcProblem import ArcProblem
 from ArcData import ArcData
 from ArcSet import ArcSet
@@ -73,6 +72,13 @@ class ArcAgent:
             if self.rule_works(training, rule_name): #check if the rules by themself give the correct answer
                 answer = self.apply_rule(rule_name, test_input)
                 self.add_answer(predictions, answer)
+            else:
+                color_map = self.learn_color_map(training, rule_name)
+                if color_map is not None:
+                    answer = self.apply_rule(rule_name, test_input)
+                    if answer is not None:
+                        self.add_answer(predictions, answer)
+
         return predictions[:3]
 
     def apply_rule(self, rule_name, grid):
@@ -122,15 +128,78 @@ class ArcAgent:
         add the answer to the predictions list as long as it isnt empty
         """
         if answer is not None:
-            for existing in predictions:
-                if np.array_equal(existing, answer):
-                    return
+            return
+        for existing in predictions:
+            if np.array_equal(existing, answer):
+                return
 
         predictions.append(answer)
 
 ####TO DO
 #write the functions to test the other rules like
 ####comparing halves of the training image s
-####crop nonzer
+    def crop_nonzero(self, grid):
+        """Cut away the empty (0) border around everything else."""
+        nonzero_cells = np.argwhere(grid != 0)
+
+        if len(nonzero_cells) == 0:
+            return None
+
+        first_row, first_col = nonzero_cells.min(axis=0)
+        last_row, last_col = nonzero_cells.max(axis=0)
+
+        return grid[first_row:last_row + 1, first_col:last_col + 1].copy()
+####crop nonzero
+    def compare_halves(self, grid, direction, operation):
+        """
+        split the grid into two parts and see if they compare at all through ands ors nors
+        """
+        rows, cols = grid.shape
+        if direction == "left_right":
+            size = cols // 2
+            if size == 0:
+                return None
+            first_half = grid[:, :size]
+            second_half = grid[:, cols - size:]
+        else:
+            size = rows // 2
+            if size == 0:
+                return None
+            first_half = grid[:size, :]
+            second_half = grid[rows - size:, :]
+
+        first_filled = first_half != 0
+        second_filled = second_half != 0
+        if operation == "and":  #filled in BOTH halves
+            result = first_filled & second_filled
+        elif operation == "or":  #filled in EITHER half
+            result = first_filled | second_filled
+        else:  #"nor": filled in NEITHER half
+            result = ~(first_filled | second_filled)
+        return result.astype(int)
+
 ####learning colors???
     #how to learn when colors are just swapped
+
+    def learn_color_map(self, training, rule_name):
+        """
+        learns basic color swapping, like every yellow becomes a red, etc.
+        """
+        color_map = {}
+
+        for train_input, train_output in training:
+            #answer = self.apply_rule(rule_name, training)
+            #print(f'train_input {train_input}, training: {training}')
+            answer = self.apply_rule(rule_name, train_input)
+
+            #print(f'ANSWER: {answer}, FLATTENED: {answer.flatten(), TRAIN FLATTTENED: {train_output.flatten()}')
+            if answer is None or answer.shape != train_output.shape:
+                return None
+            for old_color, new_color in zip(answer.flatten(), train_output.flatten()):
+                old_color = int(old_color)
+                new_color = int(new_color)
+
+                if old_color in color_map and color_map[old_color] != new_color:
+                    return None  ##
+                color_map[old_color] = new_color
+        return color_map
